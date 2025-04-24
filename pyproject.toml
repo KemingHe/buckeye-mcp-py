@@ -1,0 +1,10 @@
+[project]
+name = "buckeye-mcp-py"
+version = "0.1.0"
+description = "Independent MCP server for querying all public information across the osu.edu domain and subdomains."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "httpx>=0.28.1",
+    "mcp[cli]>=1.6.0",
+]
