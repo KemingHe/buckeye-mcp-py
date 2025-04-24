@@ -1,4 +1,5 @@
 from typing import Any
+import logging
 
 import httpx
 from mcp.server.fastmcp import FastMCP
@@ -21,8 +22,8 @@ async def make_nws_request(url: str) -> dict[str, Any] | None:
             res = await client.get(url, headers=headers, timeout=timeout)
             res.raise_for_status()
             return res.json()
-        except Exception:
-            return None
+        except Exception as e:
+            logging.error(f"Error occurred while making NWS request to {url}: {e}")
 
 
 def format_alert(feature: dict) -> str:
@@ -69,11 +70,13 @@ async def get_forecast(latitude: float, longitude: float) -> str:
     if not points_data:
         return "Unable to fetch forecast data for this location."
     
-    # Step 2: get the forecast URL and then the forecast data
+    # Step 2: get the forecast URL and then the forecast data, handle validation
     forecast_url = points_data["properties"]["forecast"]
     forecast_data = await make_nws_request(forecast_url)
+    if not forecast_data or "properties" not in forecast_data or "periods" not in forecast_data["properties"]:
+        return "Invalid forecast data received."
 
-    # Step 3: format the periods into a human-readable forecast
+    # Step 3: format the periods from forecast data into a human-readable forecast
     periods = forecast_data["properties"]["periods"]
     forecasts = []
     periods_count = 5
