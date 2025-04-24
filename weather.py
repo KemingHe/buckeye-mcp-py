@@ -68,13 +68,17 @@ async def get_forecast(latitude: float, longitude: float) -> str:
     points_url = f"{NWS_API_BASE}/points/{latitude},{longitude}"
     points_data = await make_nws_request(points_url)
     if not points_data:
-        return "Unable to fetch forecast data for this location."
+        return "Unable to fetch points data for this location."
+    if "properties" not in points_data or "forecast" not in points_data["properties"]:
+        return "Invalid points data received: missing forecast information."
     
     # Step 2: get the forecast URL and then the forecast data, handle validation
     forecast_url = points_data["properties"]["forecast"]
     forecast_data = await make_nws_request(forecast_url)
-    if not forecast_data or "properties" not in forecast_data or "periods" not in forecast_data["properties"]:
-        return "Invalid forecast data received."
+    if not forecast_data:
+        return "Unable to fetch forecast data for this location."
+    if "properties" not in forecast_data or "periods" not in forecast_data["properties"]:
+        return "Invalid forecast data received: missing period information."
 
     # Step 3: format the periods from forecast data into a human-readable forecast
     periods = forecast_data["properties"]["periods"]
